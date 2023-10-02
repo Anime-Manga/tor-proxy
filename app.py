@@ -3,12 +3,12 @@ import json
 import signal
 from argparse import ArgumentParser
 
-### DOCKER ###
-import docker
-
 ### RABBITMQ ###
 import pika
 from pika.exceptions import AMQPConnectionError
+
+### UTILS ###
+from utils import proxies
 
 
 ### CONSTANTS ###
@@ -16,34 +16,13 @@ from pika.exceptions import AMQPConnectionError
 PRG_NAME = "animemanga-tor-privoxy"
 PRG_DESC = "Anime Manga - tor-privoxy container manager"
 PRG_EPIL = f"V1 - {PRG_NAME}"
-# Docker Settings
-DOCKER_PROXY_IMAGE = "dockage/tor-privoxy:latest"
-
-
-### NASTY GLOBAL VARIABLES ###
-# Declaring container map
-docker_conatiner_map = {}
-docker_container_list = []
 
 
 ### FUNCTIONS ###
-# Termination function for all started proxies
-def terminate_proxies():
-    try:
-        # Turn off all of the containers for the proxies
-        for container in docker_container_list:
-            docker_conatiner_map[container].stop()
-            docker_conatiner_map[container].remove()
-    except Exception as e:
-        print("An error occurred while stopping and removing proxies, please remove them manually and check your Docker configuration")
-        print(e)
-        sys.exit(-1)
-
-
 # Define a function to handle termination signals
 def handle_termination(signal, frame):
     print("Closing gracefully, please wait ...")
-    terminate_proxies()
+    proxies.terminate_proxies()
     sys.exit(0)
 
 
@@ -64,29 +43,17 @@ def main():
     parser.add_argument('--start-port', default=8000, type=int, help="the starting port the assign to the proxies (every proxy will have assigned a port number +1 of the previews)")
     args = parser.parse_args()
 
-    # Getting Docker client instance to control the Docker installation
-    docker_client = docker.from_env()
-
     try:
-        print(f"Starting '{args.replicas}' [{args.start_port}-{args.start_port + (args.replicas - 1)}] proxies ...")
-
-        # Loop <args.replicas> times to create all proxies
-        for proxy in range(args.replicas):
-            # Calculate the proxy container port that needs to be assigned
-            container_port = args.start_port + proxy
-            # Format the container name
-            container_name = f"animemanga-tor-proxy-{container_port}"
-            # Construct the container address (used by the incoming messages to identify the proxy they need to address)
-            container_full_address = f"http://{args.expected_address}:{container_port}"
-
-            # Start the proxies and save their handles
-            docker_conatiner_map[container_full_address] = docker_client.containers.run(image=DOCKER_PROXY_IMAGE, detach=True, ports={8118: container_port}, name=container_name)
-            docker_container_list.append(container_full_address)  # Add the container to the <docker_container_list> (to generate the proxy.txt file and turn them off)
-
-        print("All proxies are up and running!")
+        # Initialize proxies
+        proxies.initiate_proxies(args.replicas, args.start_port, args.expected_address)
     except Exception as e:
-        print(f"Can't run '{DOCKER_PROXY_IMAGE}' please check your Docker configuration")
+        # If an error occurs:
+        #   Print the error
+        #   Terminate all started proxies (if any)
         print(e)
+        proxies.terminate_proxies()
+
+        # Exit with error
         sys.exit(-1)
 
     # Opening and reading the creds file
@@ -108,7 +75,13 @@ def main():
 
         print(f"Connection to rabbitmq://{args.rabbit_host}:{args.rabbit_port} estabished!")
     except AMQPConnectionError:
+        # If an error occurs:
+        #   Print the error
+        #   Terminate all started proxies (if any)
         print("Can't connect to RabbitMQ (check ip/hostname:port or that credentials are correct)")
+        proxies.terminate_proxies()
+
+        # Exit with error
         sys.exit(-1)
 
     # Declaring the message queue
@@ -123,29 +96,20 @@ def main():
         # Go trought all possible actions
         if(json_object['action'] == "restart"):  # Action: restart
             print(f"Restarting proxy '{json_object['proxy']}' ...")
-            # Restart proxy from the map
-            docker_conatiner_map[json_object['proxy']].restart()
+
+            # Restart proxy
+            proxies.restart_proxy(json_object['proxy'])
             # Manually acknowledge (ack) the message
             ch.basic_ack(delivery_tag=method.delivery_tag)
+
             print(f"Proxy '{json_object['proxy']}' restarted ...")
 
     # Declare how the messages will be handled by the consumer
     channel.basic_consume(queue=args.queue_name, on_message_callback=callback, auto_ack=False)
 
-    try:
-        # Start consuming messages
-        print('Waiting for messages. To exit, press CTRL+C')
-        channel.start_consuming()
-    except KeyboardInterrupt:
-        print("Closing gracefully, please wait ...")
-
-        # Close the connection to the RabbitMQ service
-        connection.close()
-        # Call the temrination function for all proxies
-        terminate_proxies()
-
-        # At this point evrything is correctly closed
-        sys.exit(0)
+    # Start consuming messages
+    print('Waiting for messages. To exit, press CTRL+C')
+    channel.start_consuming()
 
 
 if __name__ == "__main__":
