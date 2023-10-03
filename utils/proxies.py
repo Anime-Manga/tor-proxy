@@ -5,7 +5,7 @@ import docker
 # Docker Settings
 DOCKER_PROXY_IMAGE = "dockage/tor-privoxy:latest"
 
-### NASTY GLOBAL VARIABLES ###
+### NASTY GLOBAL VARIABLES (AT LEAST THEY ARE GLOBAL ONLY ON THIS MODULE) ###
 # Declaring container map
 docker_conatiner_map = {}
 docker_container_list = []
@@ -38,9 +38,8 @@ def initiate_proxies(replicas: int, start_port: int, expected_address: str):
 
         print("All proxies are up and running!")
     except Exception as e:
-        # Print an exception message and pass it to the caller
-        print(f"Cannot initiate '{DOCKER_PROXY_IMAGE}' please check your Docker configuration")
-        raise e
+        # Raise and exception appending the original error
+        raise Exception(f"Cannot initiate '{DOCKER_PROXY_IMAGE}' please check your Docker configuration: " + str(e))
 
 
 # Restart functions for all proxies
@@ -64,6 +63,5 @@ def terminate_proxies():
 
         print("Proxies terminated!")
     except Exception as e:
-        # Print an exception message and pass it to the caller
-        print("An error occurred while terminating and removing proxies, please remove any remaining proxies manually and Check docker your configuration")
-        raise e
+        # Raise and exception appending the original error
+        raise Exception("An error occurred while terminating and removing proxies, please remove any remaining proxies manually and Check docker your configuration: " + str(e))
