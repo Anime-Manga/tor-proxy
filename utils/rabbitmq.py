@@ -31,12 +31,23 @@ def connect(host: str, port: int, user: str, passwd: str):
         raise Exception("Can't connect to RabbitMQ (check ip/hostname:port or that credentials are correct)")
 
 
-# Delclares a queue
-def declare(queue_name: str):
+# Declares an exchange
+def exchenage_declare(exchange_name: str, type: str = 'fanout', durable: bool = False):
+    # Declare the exchange
+    channel.exchange_declare(exchange=exchange_name, exchange_type=type, durable=durable)
+
+
+# Declares a queue
+def queue_declare(queue_name: str):
     # Declaring the message queue
     channel.queue_declare(queue=queue_name)
     # print(f"Delcared 'rabbitmq://{args.rabbit_host}:{args.rabbit_port}/{args.queue_name}'")
     print(f"Delcared queue '{queue_name}'")
+
+
+#  Bind queue to exchange
+def bind_queue(exchange_name: str, queue_name: str):
+    channel.queue_bind(exchange=exchange_name, queue=queue_name)
 
 
 # Declare how the messages will be handled by the consumer

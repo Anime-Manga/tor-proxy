@@ -36,19 +36,19 @@ signal.signal(signal.SIGTERM, handle_termination)
 # Callback called when messages come in from the queue
 def callback(ch, method, properties, body):
     # Parse the message into a Json object
-    json_object = json.loads(body.decode('UTF-8'))
+    json_object = json.loads(body.decode('UTF-8'))['message']
     print(f"Received payload: {json_object}")
 
     # Go trought all possible actions
     if(json_object['action'] == "restart"):  # Action: restart
-        print(f"Restarting proxy '{json_object['proxy']}' ...")
+        print(f"Restarting proxy '{json_object['endpoint']}' ...")
 
         # Restart proxy
-        proxies.restart_proxy(json_object['proxy'])
+        proxies.restart_proxy(json_object['endpoint'])
         # Manually acknowledge (ack) the message
-        #ch.basic_ack(delivery_tag=method.delivery_tag)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
-        print(f"Proxy '{json_object['proxy']}' restarted ...")
+        print(f"Proxy '{json_object['endpoint']}' restarted ...")
 
 
 ### ENTRY POINT ###
@@ -57,6 +57,7 @@ def main():
     parser.add_argument('--rabbit-host', required=True, help="ip/hostname of the RabbitMQ service")
     parser.add_argument('--rabbit-port', default=5672, help="port of the RabbitMQ service [default: 5672]")
     parser.add_argument('--creds', default='creds', help="path to a file containing the credentials needed to connect to RabbitMQ")
+    parser.add_argument('--exchange-name', default='Cesxhin.AnimeManga.Domain.DTO:ProxyDTO', help="name of the exchange that needs to be created")
     parser.add_argument('--queue-name', default='animemanga-tor-proxy', help="name of the message queue that needs to be created")
     parser.add_argument('--replicas', default=15, type=int, help="the amount of proxy containers that need to be created")
     parser.add_argument('--expected-address', required=True, help="expected IP address from the message-queue (incoming messages address proxies using 'http://<expected-address>:<proxy_port>')")
@@ -76,8 +77,12 @@ def main():
         # Connecto to RabbitMQ
         rabbitmq.connect(host=args.rabbit_host, port=args.rabbit_port, user=creds[0], passwd=creds[1])
 
-        # Delcare the queue that we are going to listen
-        rabbitmq.declare(args.queue_name)
+        # Declare the exchange and queue that we are going to listen
+        rabbitmq.exchenage_declare(exchange_name=args.exchange_name, durable=True)
+        rabbitmq.queue_declare(queue_name=args.queue_name)
+
+        # Binsing queue to exchange
+        rabbitmq.bind_queue(exchange_name=args.exchange_name, queue_name=args.queue_name)
 
         # Declare the method of consumption
         rabbitmq.basic_consume(queue=args.queue_name, on_message_callback=callback, auto_ack=False)
