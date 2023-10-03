@@ -42,9 +42,29 @@ def initiate_proxies(replicas: int, start_port: int, expected_address: str):
         raise Exception(f"Cannot initiate '{DOCKER_PROXY_IMAGE}' please check your Docker configuration: " + str(e))
 
 
-# Restart functions for all proxies
 def restart_proxy(proxy: str):
-    docker_conatiner_map[proxy].restart()
+    """
+    # restart_proxy
+    ## Function that restarts a proxy given it's address
+    :proxy: Full expected address of the proxy http://<address>:<port>
+    :return bool: True: the proxy server has been found and restarted - False: the proxy server does not exists
+    :raise Exception: if an unexpected error occurs
+    """
+
+    try:
+        # Get proxy from the map
+        proxy_container = docker_conatiner_map.get(proxy)
+
+        # Check if the proxy exists
+        if proxy_container:
+            # If I get here, it exists and I can restart the proxy server
+            proxy_container.restart()
+            return True
+        else:
+            # If I get here, it does not exists so I'll do nothing
+            return False
+    except Exception as e:
+        raise Exception(f"restart_proxy(): " + str(e))
 
 
 # Termination function for all proxies

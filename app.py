@@ -41,14 +41,12 @@ def callback(ch, method, properties, body):
 
     # Go trought all possible actions
     if(json_object['action'] == "restart"):  # Action: restart
-        print(f"Restarting proxy '{json_object['endpoint']}' ...")
-
         # Restart proxy
-        proxies.restart_proxy(json_object['endpoint'])
-        # Manually acknowledge (ack) the message
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+        if(proxies.restart_proxy(json_object['endpoint'])):
+            print(f"Proxy '{json_object['endpoint']}' restarted ...")
 
-        print(f"Proxy '{json_object['endpoint']}' restarted ...")
+            # Manually acknowledge (ack) the message (the proxy has been restarted succesfully)
+            ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
 ### ENTRY POINT ###
