@@ -52,5 +52,9 @@ def start_consuming():
 
 # Close the rabbitmq connection
 def close_connection():
-    print('Closing RabbitMQ connection ...')
-    connection.close()
+    try:
+        # Closing the RabbitMQ connection
+        print('Closing RabbitMQ connection ...')
+        connection.close()
+    except Exception as e:
+        raise Exception("There was and error while closing the connection from RabbitMQ: " + str(e))

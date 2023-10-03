@@ -37,6 +37,7 @@ signal.signal(signal.SIGTERM, handle_termination)
 def callback(ch, method, properties, body):
     # Parse the message into a Json object
     json_object = json.loads(body.decode('UTF-8'))
+    print(f"Received payload: {json_object}")
 
     # Go trought all possible actions
     if(json_object['action'] == "restart"):  # Action: restart
@@ -57,7 +58,7 @@ def main():
     parser.add_argument('--rabbit-port', default=5672, help="port of the RabbitMQ service [default: 5672]")
     parser.add_argument('--creds', default='creds', help="path to a file containing the credentials needed to connect to RabbitMQ")
     parser.add_argument('--queue-name', default='animemanga-tor-proxy', help="name of the message queue that needs to be created")
-    parser.add_argument('--replicas', default=15, help="the amount of proxy containers that need to be created")
+    parser.add_argument('--replicas', default=15, type=int, help="the amount of proxy containers that need to be created")
     parser.add_argument('--expected-address', required=True, help="expected IP address from the message-queue (incoming messages address proxies using 'http://<expected-address>:<proxy_port>')")
     parser.add_argument('--start-port', default=8000, type=int, help="the starting port the assign to the proxies (every proxy will have assigned a port number +1 of the previews)")
     args = parser.parse_args()
