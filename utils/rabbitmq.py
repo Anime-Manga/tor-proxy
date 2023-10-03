@@ -35,7 +35,7 @@ def connect(host: str, port: int, user: str, passwd: str):
 def declare(queue_name: str):
     # Declaring the message queue
     channel.queue_declare(queue=queue_name)
-    #print(f"Delcared 'rabbitmq://{args.rabbit_host}:{args.rabbit_port}/{args.queue_name}'")
+    # print(f"Delcared 'rabbitmq://{args.rabbit_host}:{args.rabbit_port}/{args.queue_name}'")
     print(f"Delcared queue '{queue_name}'")
 
 
