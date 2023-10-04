@@ -18,6 +18,14 @@ def get_docker_client():
 
 # Initiation function to initialize all proxies
 def initiate_proxies(replicas: int, start_port: int, expected_address: str):
+    """
+    # initiate_proxies()
+    ## Function that initializes all proxies managed by the service
+    :rerplicas: number of proxies (containers) that need to be started
+    :start_port: start port of the proxies (all generated proxies will have a port equal to start_port + proxy number
+    :expected_address: address expected from the requests
+    """
+
     try:
         print(f"Intitiating '{replicas}' [{start_port} - {start_port + (replicas - 1)}] proxies ...")
 
@@ -42,6 +50,7 @@ def initiate_proxies(replicas: int, start_port: int, expected_address: str):
         raise Exception(f"Cannot initiate '{DOCKER_PROXY_IMAGE}' please check your Docker configuration: " + str(e))
 
 
+# Restart function to restart a specific proxy
 def restart_proxy(proxy: str):
     """
     # restart_proxy
