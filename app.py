@@ -55,7 +55,7 @@ def main():
     parser.add_argument('--rabbit-host', required=True, help="ip/hostname of the RabbitMQ service")
     parser.add_argument('--rabbit-port', default=5672, help="port of the RabbitMQ service [default: 5672]")
     parser.add_argument('--creds', default='creds', help="path to a file containing the credentials needed to connect to RabbitMQ")
-    parser.add_argument('--exchange-name', default='Cesxhin.AnimeManga.Domain.DTO:ProxyDTO', help="name of the exchange that needs to be created")
+    parser.add_argument('--exchange-name', default='', help="name of the exchange that needs to be created")
     parser.add_argument('--queue-name', default='animemanga-tor-proxy', help="name of the message queue that needs to be created")
     parser.add_argument('--replicas', default=15, type=int, help="the amount of proxy containers that need to be created")
     parser.add_argument('--expected-address', required=True, help="expected IP address from the message-queue (incoming messages address proxies using 'http://<expected-address>:<proxy_port>')")
