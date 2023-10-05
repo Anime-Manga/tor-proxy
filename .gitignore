@@ -1,4 +1,5 @@
 ### PROJECT SPECIFIC IGNORES ###
+proxy.txt
 .vscode
 creds
 
