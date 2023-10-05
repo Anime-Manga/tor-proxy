@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  animemanga-tor-proxy:
+    image: animemanga-tor-proxy
+    restart: unless-stopped
+    container_name: tor-proxy
+    hostname: tor-proxy
+    environment:
+      RABBIT_HOST: 145.110.1.234
+      EXPECTED_ADDRESS: 145.110.1.234
+      REPLICAS: 10
+      EXCHANGE_NAME: "Cesxhin.AnimeManga.Domain.DTO:ProxyDTO"
+    volumes:
+      - ./creds:/app/creds
+      - ./proxy:/app/proxy
+      - /var/run/docker.sock:/var/run/docker.sock
