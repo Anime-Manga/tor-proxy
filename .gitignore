@@ -1,7 +1,5 @@
 ### PROJECT SPECIFIC IGNORES ###
-proxy.txt
 .vscode
-creds
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -54,6 +54,8 @@ def main():
     parser = ArgumentParser(PRG_NAME, description=PRG_DESC, epilog=PRG_EPIL)
     parser.add_argument('--rabbit-host', required=True, help="ip/hostname of the RabbitMQ service")
     parser.add_argument('--rabbit-port', default=5672, help="port of the RabbitMQ service [default: 5672]")
+    parser.add_argument('--rabbit-user', required=True, help="username of the RabbitMQ service")
+    parser.add_argument('--rabbit-pass', required=True, help="password of the RabbitMQ service")
     parser.add_argument('--creds', default='creds', help="path to a file containing the credentials needed to connect to RabbitMQ")
     parser.add_argument('--exchange-name', default='', help="name of the exchange that needs to be created")
     parser.add_argument('--queue-name', default='animemanga-tor-proxy', help="name of the message queue that needs to be created")
@@ -70,14 +72,8 @@ def main():
         # Write the proxy file at the path specified
         proxies.write_proxy_file(args.proxy_file)
 
-        # Opening and reading the creds file for the RabbitMQ connection
-        creds = []
-        with open(args.creds, 'r') as creds_file:
-            # Replacing line terminations with nothing, so they can get the f*** out of here
-            creds = [cred.replace("\n", "") for cred in creds_file.readlines()]
-
         # Connecto to RabbitMQ
-        rabbitmq.connect(host=args.rabbit_host, port=args.rabbit_port, user=creds[0], passwd=creds[1])
+        rabbitmq.connect(host=args.rabbit_host, port=args.rabbit_port, user=args.rabbit_user, passwd=args.rabbit_pass)
 
         # Declare the exchange and queue that we are going to listen
         rabbitmq.exchenage_declare(exchange_name=args.exchange_name, durable=True)
