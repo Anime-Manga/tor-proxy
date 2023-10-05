@@ -1,5 +1,5 @@
-# Base Image: Python 3.12
-FROM python:3.12
+# Base Image: Python 3.12 slim
+FROM python:3.12.0-slim
 
 # Copy the required contents from the current directory
 #   requirements.txt --> All Python dependencies
