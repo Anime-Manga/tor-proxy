@@ -8,11 +8,16 @@ DOCKER_PROXY_IMAGE = "dockage/tor-privoxy:latest"
 ### NASTY GLOBAL VARIABLES (AT LEAST THEY ARE GLOBAL ONLY ON THIS MODULE) ###
 # Declaring container map
 docker_conatiner_map = {}
-docker_container_list = []
 
 
 # Gets the docker client
 def get_docker_client():
+    """
+    # get_docker_client()
+    ## Returns the handle to the docker installation to manage
+    """
+
+    # Return docker from env (local installation)
     return docker.from_env()
 
 
@@ -42,18 +47,17 @@ def initiate_proxies(replicas: int, start_port: int, expected_address: str):
 
             # Start the proxies and save their handles
             docker_conatiner_map[container_full_address] = get_docker_client().containers.run(image=DOCKER_PROXY_IMAGE, detach=True, ports={8118: container_port}, name=container_name)
-            docker_container_list.append(container_full_address)  # Add the container to the <docker_container_list> (to generate the proxy.txt file and turn them off)
 
         print("All proxies are up and running!")
     except Exception as e:
         # Raise and exception appending the original error
-        raise Exception(f"Cannot initiate '{DOCKER_PROXY_IMAGE}' please check your Docker configuration: " + str(e))
+        raise Exception(f"initiate_proxies(): cannot initiate '{DOCKER_PROXY_IMAGE}' please check your Docker configuration: " + str(e))
 
 
 # Restart function to restart a specific proxy
 def restart_proxy(proxy: str):
     """
-    # restart_proxy
+    # restart_proxy()
     ## Function that restarts a proxy given it's address
     :proxy: Full expected address of the proxy http://<address>:<port>
     :return bool: True: the proxy server has been found and restarted - False: the proxy server does not exists
@@ -73,24 +77,41 @@ def restart_proxy(proxy: str):
             # If I get here, it does not exists so I'll do nothing
             return False
     except Exception as e:
-        raise Exception(f"restart_proxy(): " + str(e))
+        raise Exception("restart_proxy(): " + str(e))
 
 
 # Termination function for all proxies
 def terminate_proxies():
+    """
+    # terminate_proxies()
+    ## Function that stops all proxies managed by the service
+    """
+
     try:
         print("Terminating proxies ...")
 
         # Turn off all of the containers for the proxies
-        for container in docker_container_list:
-            print(f"Terminating '{container}'")
+        for key, container in docker_conatiner_map.items():
+            print(f"Terminating '{key}' ...")
 
-            # Stopping container
-            docker_conatiner_map[container].stop()
-            # Removing container
-            docker_conatiner_map[container].remove()
+            # Stopping & Removing container
+            container.stop()
+            container.remove()
 
-        print("Proxies terminated!")
+        print("All proxies have been terminated!")
     except Exception as e:
         # Raise and exception appending the original error
-        raise Exception("An error occurred while terminating and removing proxies, please remove any remaining proxies manually and Check docker your configuration: " + str(e))
+        raise Exception("terminate_proxies(): an error occurred while terminating and removing proxies, please remove any remaining proxies manually and Check docker your configuration: " + str(e))
+
+
+# Generates the proxy file
+def write_proxy_file(path: str, separator: str = ','):
+    """
+    # write_proxy_file()
+    ## Writes the proxy file at the path indicated
+    :path: full path to the proxy file to be written
+    """
+
+    # Loop all keys and join them togheter separating with <separator> character
+    proxy_list_str = separator.join([key for key in docker_conatiner_map.keys()])
+    print(proxy_list_str)
