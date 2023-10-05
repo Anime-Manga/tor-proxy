@@ -114,7 +114,7 @@ def write_proxy_file(path: str, separator: str = ','):
 
     # Loop all keys and join them togheter separating with <separator> character
     proxy_list_str = separator.join([key for key in docker_conatiner_map.keys()])
-    
+
     # Open file at <path> in write mode (the path MUST be full)
     with open(path, 'w') as proxy_file:
         # Write the proxy file
