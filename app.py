@@ -66,6 +66,9 @@ def main():
         # Initialize proxies
         proxies.initiate_proxies(args.replicas, args.start_port, args.expected_address)
 
+        # TODO: COMPLETE
+        proxies.write_proxy_file("proxy.txt")
+
         # Opening and reading the creds file for the RabbitMQ connection
         creds = []
         with open(args.creds, 'r') as creds_file:
