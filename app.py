@@ -28,7 +28,7 @@ def handle_termination(signal, frame):
     sys.exit(0)
 
 
-# Register the signal handler for SIGINT and SIGTERM
+# Register the signal handler for SIGINT and SIGTERM (CTLR+C and unexpected interrupts)
 signal.signal(signal.SIGINT, handle_termination)
 signal.signal(signal.SIGTERM, handle_termination)
 
@@ -60,14 +60,15 @@ def main():
     parser.add_argument('--replicas', default=15, type=int, help="the amount of proxy containers that need to be created")
     parser.add_argument('--expected-address', required=True, help="expected IP address from the message-queue (incoming messages address proxies using 'http://<expected-address>:<proxy_port>')")
     parser.add_argument('--start-port', default=8000, type=int, help="the starting port the assign to the proxies (every proxy will have assigned a port number +1 of the previews)")
+    parser.add_argument('--proxy-file', default="proxy.txt", help="full path to the proxy file to be written")
     args = parser.parse_args()
 
     try:
         # Initialize proxies
         proxies.initiate_proxies(args.replicas, args.start_port, args.expected_address)
 
-        # TODO: COMPLETE
-        proxies.write_proxy_file("proxy.txt")
+        # Write the proxy file at the path specified
+        proxies.write_proxy_file(args.proxy_file)
 
         # Opening and reading the creds file for the RabbitMQ connection
         creds = []
