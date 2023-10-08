@@ -112,6 +112,10 @@ def write_proxy_file(path: str, separator: str = ','):
     :path: full path to the proxy file to be written
     """
 
+    # Don't do s*** if theres no path (obviously!!)
+    if(len(path) == 0):
+        return
+
     # Loop all keys and join them togheter separating with <separator> character
     proxy_list_str = separator.join([key for key in docker_conatiner_map.keys()])
 
