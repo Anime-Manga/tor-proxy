@@ -18,4 +18,4 @@ WORKDIR /app
 RUN python -m pip install -r requirements.txt
 
 # Launch the application via launch.sh (wich launches the app.py file with the correct arguments)
-ENTRYPOINT ./launch.sh
+ENTRYPOINT ["python", "-u", "app.py"]
