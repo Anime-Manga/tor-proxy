@@ -9,7 +9,6 @@ FROM python:3.12.0-slim
 ADD ./requirements.txt /app/
 ADD ./utils/ /app/utils/
 ADD ./app.py /app/
-ADD ./launch.sh /app/
 
 # Set the working directory to /app
 WORKDIR /app
