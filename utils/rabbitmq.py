@@ -52,7 +52,6 @@ def exchenage_declare(exchange_name: str, type: str = 'fanout', durable: bool = 
 def queue_declare(queue_name: str):
     # Declaring the message queue
     channel.queue_declare(queue=queue_name)
-    # print(f"Delcared 'rabbitmq://{args.rabbit_host}:{args.rabbit_port}/{args.queue_name}'")
     print(f"Delcared queue '{queue_name}'")
 
 
@@ -68,8 +67,11 @@ def basic_consume(queue: str, on_message_callback, auto_ack: bool):
 
 # Start consuming messages
 def start_consuming():
-    print('Waiting for messages. To exit, press CTRL+C')
-    channel.start_consuming()
+    try:
+        print('Waiting for messages. To exit, press CTRL+C')
+        channel.start_consuming()
+    except pika.exceptions.ConnectionClosedByBroker as e:
+        print("start_consuming() --> Connection lost form RabbitMQ: " + str(e))
 
 
 # Close the rabbitmq connection
@@ -77,6 +79,7 @@ def close_connection():
     try:
         # Closing the RabbitMQ connection
         print('Closing RabbitMQ connection ...')
+        channel.stop_consuming()
         connection.close()
     except Exception as e:
         raise Exception("There was and error while closing the connection from RabbitMQ: " + str(e))
