@@ -26,9 +26,9 @@ def connect(host: str, port: int, user: str, passwd: str):
             host=host,
             port=port,
             credentials=credentials,
-            connection_attempts=10, # Number of retry attempts if connection fails
-            retry_delay=5,          # Delay in seconds between connection retries
-            socket_timeout=10,      # Socket operation timeout in seconds
+            connection_attempts=10,  # Number of retry attempts if connection fails
+            retry_delay=5,           # Delay in seconds between connection retries
+            socket_timeout=10,       # Socket operation timeout in seconds
         )
 
         # Setup of the connection
