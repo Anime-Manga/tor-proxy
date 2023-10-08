@@ -20,8 +20,19 @@ def connect(host: str, port: int, user: str, passwd: str):
 
         # Setup of plain credentials
         credentials = pika.PlainCredentials(username=user, password=passwd)
+
+        # Setup connection parameters
+        parameters = pika.ConnectionParameters(
+            host=host,
+            port=port,
+            credentials=credentials,
+            connection_attempts=10, # Number of retry attempts if connection fails
+            retry_delay=5,          # Delay in seconds between connection retries
+            socket_timeout=10,      # Socket operation timeout in seconds
+        )
+
         # Setup of the connection
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, port=port, credentials=credentials))
+        connection = pika.BlockingConnection(parameters=parameters)
         # Connecting to the RabbitMQ service
         channel = connection.channel()
 
