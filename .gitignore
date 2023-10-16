@@ -1,5 +1,5 @@
 ### PROJECT SPECIFIC IGNORES ###
-creds
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
